@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS email_verifications(
+    id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    code char(6) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE,
+    expires_at TIMESTAMP WITH TIME ZONE
+);

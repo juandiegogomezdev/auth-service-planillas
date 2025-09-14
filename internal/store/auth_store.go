@@ -13,9 +13,9 @@ type storeAuth struct {
 }
 
 type AuthStore interface {
-	Exist(email string) (bool, error)
+	GetByEmail(email string) (*model.User, error)
 	CreateUser(user *model.User, code string, createdAt time.Time, expiresAt time.Time) error
-	GenerateCode(id uuid.UUID, code string, createdAt time.Time, expiresAt time.Time) error
+	UpdateCode(id uuid.UUID, code string, createdAt time.Time, expiresAt time.Time) error
 }
 
 func NewAuthStore(db *sql.DB) AuthStore {
@@ -52,22 +52,20 @@ func (s *storeAuth) CreateUser(user *model.User, code string, createdAt time.Tim
 	return nil
 }
 
-func (s *storeAuth) Exist(email string) (bool, error) {
-	q := `SELECT 1 FROM users WHERE email=$1`
-	row := s.db.QueryRow(q, email)
-	var exists int
-	err := row.Scan(&exists)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false, nil
-		}
-		return false, err
-	}
-	return true, nil
-}
-
-func (s *storeAuth) GenerateCode(id uuid.UUID, code string, createdAt time.Time, expiresAt time.Time) error {
+func (s *storeAuth) UpdateCode(id uuid.UUID, code string, createdAt time.Time, expiresAt time.Time) error {
 	q := `UPDATE email_verifications SET code=$1, created_at=$2, expires_at=$3 WHERE id=$4`
 	_, err := s.db.Exec(q, code, createdAt, expiresAt, id)
 	return err
+}
+
+func (s *storeAuth) GetByEmail(email string) (*model.User, error) {
+	q := `SELECT id, email, hashed_password, created_at FROM users WHERE email=$1`
+	row := s.db.QueryRow(q, email)
+
+	var user model.User
+	err := row.Scan(&user.ID, &user.Email, &user.HashedPassword, &user.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
 }

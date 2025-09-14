@@ -1,0 +1,30 @@
+
+### Get static files
+curl -X GET "http://localhost:8080/static/auth/login/index.html"
+### Get static files
+curl -X GET "http://localhost:8080/static/auth/confirm-code/index.html?token=token-here"
+### Get static files
+curl -X Get "http://localhost:8080/static/auth/register/index.html"
+### Get static files
+curl -X Get "http://localhost:8080/static/auth/confirm-email/index.html?token=token-here"
+
+
+### Send password and email
+curl -X POST "http://localhost:8080/auth/login" \ 
+    -H "Content-Type: application/json" \ 
+    -d "{ "password": 1234, "email": "juandiego.gomez1@utp.edu.co" }"
+
+### Send confirm code
+curl -X POST "http://localhost:8080/auth/login/confirm-code" \
+    -H "Content-Type: application/json" \
+    -d "{ "code": 543423, "token": "23n525jkjlkhb24h5b2l"}"
+
+### Register a email
+curl -X POST "http://localhost:8080/auth/register" \
+    -H "Content-Type: application/json" \
+    -d "{"email": "juandiego.gomez1@utp.edu.co"}"
+
+### Confirm email
+curl -X POST "http://localhost:8080/auth/register/confirm" \
+    -H "Content-Type: application/json" \
+    -d "{"password": 1234, "token": "23n525jkjlkhb24h5b2l"}"

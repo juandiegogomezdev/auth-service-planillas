@@ -1,0 +1,4 @@
+
+- Add middleware => Rate limit in auth
+- Limit size body
+- Limit size files uploaded

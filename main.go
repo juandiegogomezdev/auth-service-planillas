@@ -14,23 +14,35 @@ func main() {
 	db := config.ConnectDB()
 	defer db.Close()
 
-	handlers := NewHandlers(db)
+	// Serve static files from the "static" directory
+	fs := http.FileServer(http.Dir("./static"))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
-	http.HandleFunc("/auth/", handlers.userHandler)
-	http.HandleFunc("/users", handlers.userHandler.RegisterRouter)
-	http.HandleFunc("/users/", handlers.userHandler.RegisterRouter)
+	// Setup API routes
+	handlers := NewHandlers(db)
+	handlers.authHandler.SetupAuthRoutes()
+	handlers.userHandler.SetupUserRoutes()
 
 	fmt.Println("Server running on http://localhost:8080")
 	http.ListenAndServe(":8080", nil)
 }
 
 type handlers struct {
+	authHandler *transport.AuthHandler
 	userHandler *transport.UserHandler
 }
 
 func NewHandlers(db *sql.DB) *handlers {
 	userStore := store.NewUserStore(db)
 	userService := service.NewUserService(userStore)
-	userHandler := transport.NewUserRoutes(userService)
-	return &handlers{userHandler: userHandler}
+	userHandler := transport.NewUserHandler(userService)
+
+	authStore := store.NewAuthStore(db)
+	authService := service.NewAuthService(authStore)
+	authHandler := transport.NewAuthHandler(authService)
+
+	return &handlers{
+		userHandler: userHandler,
+		authHandler: authHandler,
+	}
 }

@@ -1,8 +1,10 @@
 package transport
 
 import (
-	"io"
+	"encoding/json"
+	"log"
 	"net/http"
+	"proyecto/internal/dto"
 	"proyecto/internal/service"
 )
 
@@ -22,18 +24,100 @@ func NewAuthHandler(s *service.AuthService) *AuthHandler {
 	return &AuthHandler{service: s}
 }
 
-func (h *AuthHandler) handlerLogin(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) handlerRegister(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
-		body, err := io.ReadAll(r.Body)
+		var reg dto.AuthRegisterRequest
+		err := json.NewDecoder(r.Body).Decode(&reg)
 		if err != nil {
-			http.Error(w, "Failed to read request body", http.StatusInternalServerError)
+			http.Error(w, "Invalid request payload", http.StatusBadRequest)
 			return
 		}
 		r.Body.Close()
 
+		status, err := h.service.RegisterUser(reg.Email)
+		if err != nil {
+			log.Println("Error registering user:", err)
+			http.Error(w, "Error registering user", http.StatusInternalServerError)
+			return
+		}
+
+		switch status {
+		case service.RegisterUserStatusUserExists:
+			http.Error(w, "User already exists", http.StatusConflict)
+			return
+		case service.RegisterUserStatusConfirmationSent:
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("Confirmation email sent"))
+			return
+		}
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+func (h *AuthHandler) handlerRegisterConfirm(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodPost:
+		var body dto.AuthRegisterConfirmRequest
+		err := json.NewDecoder(r.Body).Decode(&body)
+		if err != nil {
+			http.Error(w, "Invalid request payload", http.StatusBadRequest)
+			return
+		}
+		r.Body.Close()
+
+		status, err := h.service.CreateUser(body.Token, body.Password)
+		if err != nil {
+			log.Println("Error creating user:", err)
+			http.Error(w, "Error creating user", http.StatusInternalServerError)
+			return
+		}
+
+		switch status {
+		case service.CreateUserStatusUserExists:
+			http.Error(w, "User already exists", http.StatusConflict)
+		case service.CreateUserStatusUserCreated:
+			w.WriteHeader(http.StatusCreated)
+			w.Write([]byte("User created successfully"))
+		default:
+			w.WriteHeader(http.StatusOK)
+		}
+
 		w.Header().Set("Content-Type", "text/plain")
-		w.Write([]byte("Login endpoint with POST method"))
+		w.Write([]byte("Register confirm endpoint with POST method"))
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+func (h *AuthHandler) handlerLogin(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodPost:
+		var body dto.AuthLoginRequest
+		err := json.NewDecoder(r.Body).Decode(&body)
+		if err != nil {
+			http.Error(w, "Invalid request payload", http.StatusBadRequest)
+			return
+		}
+		r.Body.Close()
+
+		token, status, err := h.service.Login(body.Email, body.Password)
+		if err != nil {
+			log.Println("Error logging in. ", err)
+			http.Error(w, "Error logging in", http.StatusInternalServerError)
+			return
+		}
+
+		switch status {
+		case service.LoginStatusInvalidCredentials:
+			http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+		case service.LoginStatusUserNotFound:
+			http.Error(w, "User not found", http.StatusNotFound)
+		case service.LoginStatusSuccess:
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(dto.AuthLoginResponse{Token: token})
+		}
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
@@ -43,30 +127,32 @@ func (h *AuthHandler) handlerLogin(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) handlerLoginConfirmCode(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
-		w.Header().Set("Content-Type", "text/plain")
-		w.Write([]byte("Confirm login endpoint with POST method"))
+		var body dto.AuthLoginConfirmRequest
+		err := json.NewDecoder(r.Body).Decode(&body)
+		if err != nil {
+			http.Error(w, "Invalid request payload", http.StatusBadRequest)
+			return
+		}
+		r.Body.Close()
+
+		token, status, err := h.service.ConfirmLoginCode(body.Token, body.Code)
+		if err != nil {
+			log.Println("Error confirming login code:", err)
+			http.Error(w, "Error confirming login code", http.StatusInternalServerError)
+			return
+		}
+
+		switch status {
+		case service.ConfirmLoginInvalidCode:
+			http.Error(w, "Invalid code", http.StatusUnauthorized)
+		case service.ConfirmLoginStatusInvalidToken:
+			http.Error(w, "Invalid token", http.StatusUnauthorized)
+		case service.ConfirmLoginStatusSuccess:
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(dto.AuthLoginResponse{Token: token})
+		}
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 
-}
-
-func (h *AuthHandler) handlerRegister(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodPost:
-		w.Header().Set("Content-Type", "text/plain")
-		w.Write([]byte("Register endpoint with POST method"))
-	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	}
-}
-
-func (h *AuthHandler) handlerRegisterConfirm(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodPost:
-		w.Header().Set("Content-Type", "text/plain")
-		w.Write([]byte("Register confirm endpoint with POST method"))
-	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	}
 }

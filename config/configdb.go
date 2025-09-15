@@ -16,7 +16,7 @@ type configDB struct {
 	Database string
 }
 
-func LoadConfig() configDB {
+func LoadDBConfig() configDB {
 	return configDB{
 		Host:     GetEnv("DB_HOST", "localhost"),
 		Port:     GetEnv("DB_PORT", "5433"),
@@ -27,7 +27,7 @@ func LoadConfig() configDB {
 }
 
 func ConnectDB() *sql.DB {
-	config := LoadConfig()
+	config := LoadDBConfig()
 	host := config.Host
 	port := config.Port
 	user := config.Username

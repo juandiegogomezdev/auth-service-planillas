@@ -2,11 +2,11 @@
 
 cd ../migrations
 
-archivos=$(ls *.down.sql | sort -r)
+archivos=$(ls *.up.sql)
 
 read -s -p "Enter password : " password
 echo ""
-echo "MIGRATING DOWN FILES"
+echo "MIGRATING UP FILES"
 
 
 for archivo in $archivos; do

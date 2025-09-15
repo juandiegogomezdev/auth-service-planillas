@@ -1,4 +1,5 @@
-
+- Fit expiration time tokens.
+- Send token via Cookies
 - Add middleware => Rate limit in auth
 - Limit size body
 - Limit size files uploaded

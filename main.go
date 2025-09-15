@@ -3,14 +3,20 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 	"proyecto/config"
+	"proyecto/internal/mailer"
 	"proyecto/internal/service"
 	"proyecto/internal/store"
+	"proyecto/internal/tokenizer"
 	"proyecto/internal/transport"
 )
 
 func main() {
+
+	log.SetFlags(log.Lshortfile)
+
 	db := config.ConnectDB()
 	defer db.Close()
 
@@ -33,12 +39,15 @@ type handlers struct {
 }
 
 func NewHandlers(db *sql.DB) *handlers {
+	tokenizerJWT := tokenizer.NewTokenizerJWT()
+	mailersmtp := mailer.NewSMTPMailer("host", 1234, "username", "password", "from@example.com")
+
 	userStore := store.NewUserStore(db)
 	userService := service.NewUserService(userStore)
 	userHandler := transport.NewUserHandler(userService)
 
 	authStore := store.NewAuthStore(db)
-	authService := service.NewAuthService(authStore)
+	authService := service.NewAuthService(authStore, tokenizerJWT, mailersmtp)
 	authHandler := transport.NewAuthHandler(authService)
 
 	return &handlers{

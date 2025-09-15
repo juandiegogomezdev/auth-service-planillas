@@ -9,22 +9,22 @@ curl -X Get "http://localhost:8080/static/auth/register/index.html"
 curl -X Get "http://localhost:8080/static/auth/confirm-email/index.html?token=token-here"
 
 
-### Send password and email
-curl -X POST "http://localhost:8080/auth/login" \ 
-    -H "Content-Type: application/json" \ 
-    -d "{ "password": 1234, "email": "juandiego.gomez1@utp.edu.co" }"
-
-### Send confirm code
-curl -X POST "http://localhost:8080/auth/login/confirm-code" \
-    -H "Content-Type: application/json" \
-    -d "{ "code": 543423, "token": "23n525jkjlkhb24h5b2l"}"
-
 ### Register a email
 curl -X POST "http://localhost:8080/auth/register" \
     -H "Content-Type: application/json" \
-    -d "{"email": "juandiego.gomez1@utp.edu.co"}"
+    -d '{ "email": "juandiego.gomez1@utp.edu.co"}'
 
 ### Confirm email
 curl -X POST "http://localhost:8080/auth/register/confirm" \
     -H "Content-Type: application/json" \
-    -d "{"password": 1234, "token": "23n525jkjlkhb24h5b2l"}"
+    -d '{ "password": "1234", "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJFbWFpbCI6Imp1YW5kaWVnby5nb21lejFAdXRwLmVkdS5jbyIsImV4cCI6MTc1Nzk3NzQwM30.iy0t8Em3IXjKdI1iSnxJea3LzRNmbia7ZgMapmZZWt0"}'
+
+### Send password and email
+curl -X POST "http://localhost:8080/auth/login" \ 
+    -H "Content-Type: application/json" \ 
+    -d '{ "password": "1234", "email": "juandiego.gomez1@utp.edu.co" }'
+
+### Send confirm code
+curl -X POST "http://localhost:8080/auth/login/confirm-code" \
+    -H "Content-Type: application/json" \
+    -d '{"code":"266327", "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJFbWFpbCI6Imp1YW5kaWVnby5nb21lejFAdXRwLmVkdS5jbyIsImV4cCI6MTc1ODA1NzU4Nn0.EMzyL9za_uXTCtHE2Vu-NSRKQfpzyXRVssOWbXeZ_lY"}'

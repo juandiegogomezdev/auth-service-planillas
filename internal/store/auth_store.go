@@ -16,10 +16,24 @@ type AuthStore interface {
 	GetByEmail(email string) (*model.User, error)
 	CreateUser(user *model.User, code string, createdAt time.Time, expiresAt time.Time) error
 	UpdateCode(id uuid.UUID, code string, createdAt time.Time, expiresAt time.Time) error
+	ExistUser(email string) (bool, error)
+	GetVerificationByEmail(email string) (VerificationInfo, error)
 }
 
 func NewAuthStore(db *sql.DB) AuthStore {
 	return &storeAuth{db: db}
+}
+
+func (s *storeAuth) ExistUser(email string) (bool, error) {
+	q := `SELECT EXISTS(SELECT 1 FROM users WHERE email=$1)`
+	row := s.db.QueryRow(q, email)
+
+	var exists bool
+	err := row.Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+	return exists, nil
 }
 
 func (s *storeAuth) CreateEmailVerification(id uuid.UUID, code string, created_at time.Time, expires_at time.Time) error {
@@ -34,8 +48,8 @@ func (s *storeAuth) CreateUser(user *model.User, code string, createdAt time.Tim
 		return err
 	}
 
-	qUser := `INSERT INTO users (id, email, hashed_password) VALUES ($1, $2, $3)`
-	_, err = tx.Exec(qUser, user.ID, user.Email, user.HashedPassword)
+	qUser := `INSERT INTO users (id, email, hashed_password, created_at) VALUES ($1, $2, $3, $4)`
+	_, err = tx.Exec(qUser, user.ID, user.Email, user.HashedPassword, createdAt)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -68,4 +82,22 @@ func (s *storeAuth) GetByEmail(email string) (*model.User, error) {
 		return nil, err
 	}
 	return &user, nil
+}
+
+type VerificationInfo struct {
+	Code string
+	ID   uuid.UUID
+}
+
+func (s *storeAuth) GetVerificationByEmail(email string) (VerificationInfo, error) {
+	q := `SELECT code, id FROM email_verifications where id = (SELECT id FROM users WHERE email=$1)`
+	row := s.db.QueryRow(q, email)
+
+	var code string
+	var id uuid.UUID
+	err := row.Scan(&code, &id)
+	if err != nil {
+		return VerificationInfo{}, err
+	}
+	return VerificationInfo{Code: code, ID: id}, nil
 }

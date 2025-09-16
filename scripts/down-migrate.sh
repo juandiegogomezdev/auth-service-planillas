@@ -1,6 +1,6 @@
 #! /bin/bash
 
-cd ../migrations
+cd ../internal/migrations
 
 archivos=$(ls *.down.sql | sort -r)
 

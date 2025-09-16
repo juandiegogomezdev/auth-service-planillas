@@ -1,9 +1,9 @@
-package transport
+package transportApi
 
 import (
 	"encoding/json"
 	"net/http"
-	"proyecto/internal/service"
+	"proyecto/auth-service/service"
 )
 
 func (h *UserHandler) SetupUserRoutes() {

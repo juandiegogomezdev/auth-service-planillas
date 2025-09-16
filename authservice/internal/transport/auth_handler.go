@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"proyecto/internal/dto"
-	"proyecto/internal/service"
+	"proyecto/authservice/internal/dto"
+	"proyecto/authservice/internal/service"
 )
 
-func (h *AuthHandler) SetupAuthRoutes() {
+func (h *Handler) SetupAuthRoutes() {
 	http.HandleFunc("/auth/login", h.handlerLogin)
 	http.HandleFunc("/auth/login/confirm-code", h.handlerLoginConfirmCode)
 	http.HandleFunc("/auth/register", h.handlerRegister)
@@ -16,15 +16,15 @@ func (h *AuthHandler) SetupAuthRoutes() {
 
 }
 
-type AuthHandler struct {
-	service *service.AuthService
+type Handler struct {
+	service *service.Service
 }
 
-func NewAuthHandler(s *service.AuthService) *AuthHandler {
-	return &AuthHandler{service: s}
+func NewAuthHandler(s *service.Service) *Handler {
+	return &Handler{service: s}
 }
 
-func (h *AuthHandler) handlerRegister(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) handlerRegister(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
 		var reg dto.AuthRegisterRequest
@@ -56,7 +56,7 @@ func (h *AuthHandler) handlerRegister(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *AuthHandler) handlerRegisterConfirm(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) handlerRegisterConfirm(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
 		var body dto.AuthRegisterConfirmRequest
@@ -91,7 +91,7 @@ func (h *AuthHandler) handlerRegisterConfirm(w http.ResponseWriter, r *http.Requ
 	}
 }
 
-func (h *AuthHandler) handlerLogin(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) handlerLogin(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
 		var body dto.AuthLoginRequest
@@ -124,7 +124,7 @@ func (h *AuthHandler) handlerLogin(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *AuthHandler) handlerLoginConfirmCode(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) handlerLoginConfirmCode(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
 		var body dto.AuthLoginConfirmRequest

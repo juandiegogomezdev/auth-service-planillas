@@ -2,8 +2,8 @@ package store
 
 import (
 	"database/sql"
-	"proyecto/internal/dto"
-	"proyecto/internal/model"
+	"proyecto/auth-service/internal/dto"
+	"proyecto/auth-service/internal/model"
 )
 
 type storeUser struct {

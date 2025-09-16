@@ -27,7 +27,7 @@ func NewAuthHandler(s *service.Service) *Handler {
 func (h *Handler) handlerRegister(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
-		var reg dto.AuthRegisterRequest
+		var reg dto.RegisterRequest
 		err := json.NewDecoder(r.Body).Decode(&reg)
 		if err != nil {
 			http.Error(w, "Invalid request payload", http.StatusBadRequest)
@@ -59,7 +59,7 @@ func (h *Handler) handlerRegister(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) handlerRegisterConfirm(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
-		var body dto.AuthRegisterConfirmRequest
+		var body dto.RegisterConfirmRequest
 		err := json.NewDecoder(r.Body).Decode(&body)
 		if err != nil {
 			http.Error(w, "Invalid request payload", http.StatusBadRequest)
@@ -94,7 +94,7 @@ func (h *Handler) handlerRegisterConfirm(w http.ResponseWriter, r *http.Request)
 func (h *Handler) handlerLogin(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
-		var body dto.AuthLoginRequest
+		var body dto.LoginRequest
 		err := json.NewDecoder(r.Body).Decode(&body)
 		if err != nil {
 			http.Error(w, "Invalid request payload", http.StatusBadRequest)
@@ -116,7 +116,7 @@ func (h *Handler) handlerLogin(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "User not found", http.StatusNotFound)
 		case service.LoginStatusSuccess:
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(dto.AuthLoginResponse{Token: token})
+			json.NewEncoder(w).Encode(dto.LoginResponse{Token: token})
 		}
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -127,7 +127,7 @@ func (h *Handler) handlerLogin(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) handlerLoginConfirmCode(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
-		var body dto.AuthLoginConfirmRequest
+		var body dto.LoginConfirmRequest
 		err := json.NewDecoder(r.Body).Decode(&body)
 		if err != nil {
 			http.Error(w, "Invalid request payload", http.StatusBadRequest)
@@ -149,7 +149,7 @@ func (h *Handler) handlerLoginConfirmCode(w http.ResponseWriter, r *http.Request
 			http.Error(w, "Invalid token", http.StatusUnauthorized)
 		case service.ConfirmLoginStatusSuccess:
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(dto.AuthLoginResponse{Token: token})
+			json.NewEncoder(w).Encode(dto.LoginResponse{Token: token})
 		}
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

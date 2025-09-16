@@ -1,28 +1,28 @@
 package dto
 
 // DTOs for registration
-type AuthRegisterRequest struct {
+type RegisterRequest struct {
 	Email string `json:"email"`
 }
 
 // DTOs for registration confirmation
-type AuthRegisterConfirmRequest struct {
+type RegisterConfirmRequest struct {
 	Password string `json:"password"`
 	Token    string `json:"token"`
 }
 
 // DTOs for login
-type AuthLoginRequest struct {
+type LoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
-type AuthLoginResponse struct {
+type LoginResponse struct {
 	Token string `json:"token"`
 }
 
 // DTOs for login confirmation
-type AuthLoginConfirmRequest struct {
+type LoginConfirmRequest struct {
 	Code  string `json:"code"`
 	Token string `json:"token"`
 }

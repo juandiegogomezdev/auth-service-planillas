@@ -3,8 +3,8 @@ package service
 import (
 	"fmt"
 	"log"
-	"proyecto/authservice/internal/model"
 	"proyecto/internal/utils"
+	"proyecto/services/authservice/internal/model"
 	"time"
 
 	"github.com/google/uuid"

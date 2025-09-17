@@ -3,8 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
-	"proyecto/authservice"
+	"proyecto/services/authservice"
 )
 
 func main() {
@@ -12,8 +11,7 @@ func main() {
 	log.SetFlags(log.Lshortfile)
 
 	// Run "micro" services
-	authservice.RunAuth()
-
-	fmt.Println("Server running on http://localhost:8080")
-	http.ListenAndServe(":8080", nil)
+	go authservice.RunAuth()
+	fmt.Println("Services running in http://localhost:8080")
+	select {}
 }

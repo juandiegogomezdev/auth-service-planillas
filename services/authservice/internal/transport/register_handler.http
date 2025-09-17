@@ -1,0 +1,9 @@
+### Register a email
+curl -X POST "http://localhost:8080/auth/register" \
+    -H "Content-Type: application/json" \
+    -d '{ "email": "juandiego.gomez1@utp.edu.co"}'
+
+### Confirm email
+curl -X POST "http://localhost:8080/auth/register/confirm" \
+    -H "Content-Type: application/json" \
+    -d '{ "password": "1234", "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJOZXdFbWFpbCI6Imp1YW5kaWVnby5nb21lejFAdXRwLmVkdS5jbyIsImV4cCI6MTc1ODA3MjQ2Mn0.esbi0LjJ8f2AXAaxW9yYbVi19BTuDGW_yKCOZVhXQBI"}'

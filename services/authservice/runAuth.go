@@ -3,12 +3,12 @@ package authservice
 import (
 	"net/http"
 
-	"proyecto/authservice/internal/service"
-	"proyecto/authservice/internal/store"
-	"proyecto/authservice/internal/transport"
 	"proyecto/config"
 	"proyecto/internal/mailer"
 	"proyecto/internal/tokenizer"
+	"proyecto/services/authservice/internal/service"
+	"proyecto/services/authservice/internal/store"
+	"proyecto/services/authservice/internal/transport"
 )
 
 func RunAuth() {
@@ -26,5 +26,6 @@ func RunAuth() {
 	authHandler := transport.NewAuthHandler(authService)
 
 	authHandler.SetupAuthRoutes()
+	http.ListenAndServe(":8080", nil)
 
 }

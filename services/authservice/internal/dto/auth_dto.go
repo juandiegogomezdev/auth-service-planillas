@@ -23,6 +23,5 @@ type LoginResponse struct {
 
 // DTOs for login confirmation
 type LoginConfirmRequest struct {
-	Code  string `json:"code"`
-	Token string `json:"token"`
+	Code string `json:"code"`
 }

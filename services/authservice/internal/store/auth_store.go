@@ -2,7 +2,7 @@ package store
 
 import (
 	"database/sql"
-	"proyecto/authservice/internal/model"
+	"proyecto/services/authservice/internal/model"
 	"time"
 
 	"github.com/google/uuid"

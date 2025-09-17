@@ -3,10 +3,10 @@ package service
 import (
 	"fmt"
 
-	"proyecto/authservice/internal/store"
 	"proyecto/internal/mailer"
 	"proyecto/internal/tokenizer"
 	"proyecto/internal/utils"
+	"proyecto/services/authservice/internal/store"
 )
 
 func NewAuthService(s store.Store, tokenizer tokenizer.TokenizerJWT, mailer mailer.Mailer) *Service {
@@ -56,6 +56,7 @@ func (s *Service) ConfirmLoginCode(token string, code string) (string, ConfirmLo
 		return "", ConfirmLoginStatusInvalidToken, fmt.Errorf("error parsing login token: %w", err)
 	}
 
+	fmt.Println("Verification info:", tokenPayload.Email)
 	verificationInfo, err := s.store.GetVerificationByEmail(tokenPayload.Email)
 	if err != nil {
 		return "", ConfirmLoginStatusInvalidToken, fmt.Errorf("error fetching code by email: %w", err)

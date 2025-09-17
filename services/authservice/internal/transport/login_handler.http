@@ -1,0 +1,11 @@
+###
+curl -X POST "http://localhost:8080/auth/login" \
+    -H "Content-Type: application/json" \
+    -d '{ "password": "1234", "email": "juandiego.gomez1@utp.edu.co" }' \
+    -c cookies.txt
+
+### Send confirm code
+curl -X POST "http://localhost:8080/auth/login/confirm-code" \
+    -H "Content-Type: application/json" \
+    -d '{"code":"948923"}' \
+    -b cookies.txt

@@ -1,9 +1,9 @@
 package service
 
 import (
-	"proyecto/authservice/internal/store"
 	"proyecto/internal/mailer"
 	"proyecto/internal/tokenizer"
+	"proyecto/services/authservice/internal/store"
 )
 
 type Service struct {

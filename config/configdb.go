@@ -1,10 +1,10 @@
 package config
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
 
@@ -26,7 +26,7 @@ func LoadDBConfig() configDB {
 	}
 }
 
-func ConnectDB() *sql.DB {
+func ConnectDB() *sqlx.DB {
 	config := LoadDBConfig()
 	host := config.Host
 	port := config.Port
@@ -38,7 +38,7 @@ func ConnectDB() *sql.DB {
 		"password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
 
-	db, err := sql.Open("postgres", psqlInfo)
+	db, err := sqlx.Connect("postgres", psqlInfo)
 	if err != nil {
 		log.Fatal(err)
 	}

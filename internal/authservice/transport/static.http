@@ -1,0 +1,13 @@
+
+### Get static files
+curl -X GET "http://localhost:8080/static/login/index.html"
+### Get static files
+curl -X GET "http://localhost:8080/static/confirm-code/index.html?token=token-here"
+### Get static files
+curl -X Get "http://localhost:8080/static/register/index.html"
+### Get static files
+curl -X Get "http://localhost:8080/static/confirm-email/index.html?token=token-here"
+
+
+
+### Send password and email

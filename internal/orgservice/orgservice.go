@@ -1,22 +1,20 @@
 package orgservice
 
 import (
-	"database/sql"
-	"proyecto/internal/authservice/transport"
+	"net/http"
 	"proyecto/internal/orgservice/serviceorg"
 	"proyecto/internal/orgservice/storeorg"
+	"proyecto/internal/orgservice/transportorg"
 	"proyecto/internal/shared/mailer"
-	"proyecto/internal/shared/tokenizer"
+
+	"github.com/jmoiron/sqlx"
 )
 
-func RunOrg(db *sql.DB, tokenizerJWT tokenizer.TokenizerJWT, mailersmtp mailer.Mailer, authService *service.ServiceAuth) (*service.ServiceAuth, *transport.Handler) {
+func RunOrg(db *sqlx.DB, mailersmtp mailer.ResendMailer, mux *http.ServeMux) {
 
 	orgStore := storeorg.NewOrgStore(db)
-	orgService := serviceorg.NewOrgService(orgStore, tokenizerJWT, mailersmtp)
-	orgHandler := transport.NewOrgHandler(orgService)
+	orgService := serviceorg.NewOrgService(orgStore, mailersmtp)
+	orgHandler := transportorg.NewOrgHandler(orgService)
 
-	orgHandler.SetupOrgRoutes()
-
-	return orgService, orgHandler
-
+	orgHandler.SetupOrgRoutes(mux)
 }

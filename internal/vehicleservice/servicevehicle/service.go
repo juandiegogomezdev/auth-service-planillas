@@ -1,4 +1,4 @@
-package service
+package servicevehicle
 
 import (
 	"proyecto/internal/shared/mailer"

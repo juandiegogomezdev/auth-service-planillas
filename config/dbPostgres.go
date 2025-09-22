@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -16,18 +17,16 @@ type configDB struct {
 	Database string
 }
 
-func LoadDBConfig() configDB {
-	return configDB{
-		Host:     GetEnv("DB_HOST", "localhost"),
-		Port:     GetEnv("DB_PORT", "5433"),
-		Username: GetEnv("DB_USER", "juan"),
-		Password: GetEnv("DB_PASSWORD", "tunclave"),
-		Database: GetEnv("DB_NAME", "juan"),
-	}
-}
-
 func ConnectDB() *sqlx.DB {
-	config := LoadDBConfig()
+
+	config := configDB{
+		Host:     os.Getenv("DB_HOST"),
+		Port:     os.Getenv("DB_PORT"),
+		Username: os.Getenv("DB_USER"),
+		Password: os.Getenv("DB_PASSWORD"),
+		Database: os.Getenv("DB_NAME"),
+	}
+
 	host := config.Host
 	port := config.Port
 	user := config.Username

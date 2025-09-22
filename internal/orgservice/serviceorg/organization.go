@@ -8,10 +8,6 @@ import (
 	"github.com/google/uuid"
 )
 
-func (s *ServiceOrg) GetAllOrganizationsByUserID(userID uuid.UUID) ([]dtoorg.CreatedOrganization, error) {
-	return s.store.GetAllOrganizationsByUserID(userID.String())
-}
-
 type StatusCreatingPersonalOrganization int
 
 const (
@@ -24,7 +20,7 @@ func (s *ServiceOrg) CreateNewPersonalOrganization(userId uuid.UUID, orgName str
 
 	// Check if personal organization already exists for the user.
 	// Only one personal organization is allowed per user.
-	exist, err := s.store.ExistOrganizationPersonal(userId.String())
+	exist, err := s.store.ExistOrganizationPersonal(userId)
 	if err != nil {
 		return 0, createdOrg, err
 	}
@@ -41,7 +37,7 @@ func (s *ServiceOrg) CreateNewPersonalOrganization(userId uuid.UUID, orgName str
 		CreatedAt: utils.TimeNow(),
 	}
 
-	createdOrg, err = s.store.CreateNewOrganization(&newOrg)
+	err = s.store.CreateNewOrganization(newOrg)
 	if err != nil {
 		return 0, createdOrg, err
 	}
@@ -62,7 +58,7 @@ func (s *ServiceOrg) CreateNewCompanyOrganization(userId uuid.UUID, orgName stri
 	// Check if company organization already exists for the user.
 	// Multiple company organizations are allowed per user.
 
-	companies, err := s.store.GetAllOrganizationsByUserID(userId.String())
+	companies, err := s.store.GetAllUserOrganizations(userId)
 	if err != nil {
 		return 0, createdOrg, err
 	}
@@ -88,7 +84,7 @@ func (s *ServiceOrg) CreateNewCompanyOrganization(userId uuid.UUID, orgName stri
 		CreatedAt: utils.TimeNow(),
 	}
 
-	createdOrg, err = s.store.CreateNewOrganization(&newOrg)
+	err = s.store.CreateNewOrganization(newOrg)
 	if err != nil {
 		return 0, createdOrg, err
 	}

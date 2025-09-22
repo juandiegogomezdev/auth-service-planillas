@@ -7,12 +7,13 @@ import (
 )
 
 type UserMembershipsQuery struct {
-	ID          uuid.UUID  `json:"id" db:"id"`
-	OrgID       uuid.UUID  `json:"orgId" db:"org_id"`
-	RoleID      uuid.UUID  `json:"roleId" db:"role_id"`
+	ID          uuid.UUID  `json:"iD" db:"id"`
+	OrgID       uuid.UUID  `json:"orgID" db:"org_id"`
+	RoleID      uuid.UUID  `json:"roleID" db:"role_id"`
 	Status      string     `json:"status" db:"status"`
 	FinalizedAt *time.Time `json:"finalizedAt" db:"finalized_at"`
 	Name        string     `json:"name" db:"name"`
+	TypeOrg     string     `json:"typeOrg" db:"type"`
 }
 
 type OrganizationMembershipsQuery struct {

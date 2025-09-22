@@ -1,9 +1,10 @@
 package serviceauth
 
 import (
-	"fmt"
 	"log"
+	"proyecto/config"
 	"proyecto/internal/authservice/modelauth"
+	"proyecto/internal/shared/tokenizer"
 	"proyecto/internal/shared/utils"
 	"time"
 
@@ -27,14 +28,13 @@ func (s *ServiceAuth) RegisterUser(email string) (RegisterUserStatus, error) {
 		return RegisterUserStatusUserExists, nil
 	}
 
-	token, err := s.tokenizer.GenerateConfirmEmailToken(email)
+	token, err := tokenizer.JWTGenerateConfirmEmailToken(email)
 	if err != nil {
 		return 0, err
 	}
-	fmt.Println("Generated token:", token)
 
 	// Send confirmation email
-	err = s.mailer.Send(email, "Confirm your email", "your token is: "+token)
+	go s.mailer.Send(email, "Confirm your email", "Confirm your email: <a href='"+config.STATIC_CONFIRM_EMAIL_URL+"?token="+token+"'>Click here</a>")
 	if err != nil {
 		log.Println("Error sending email:", err)
 		return 0, err
@@ -51,7 +51,7 @@ const (
 )
 
 func (s *ServiceAuth) CreateUser(token string, password string) (CreateUserStatus, error) {
-	claims, err := s.tokenizer.ParseConfirmEmailToken(token)
+	claims, err := tokenizer.JWTParseConfirmEmailToken(token)
 	if err != nil {
 		return 0, err
 	}

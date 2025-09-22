@@ -44,10 +44,10 @@ func (s *store) GetAllRolePermissions() (map[uuid.UUID][]uuid.UUID, error) {
 }
 
 // Get the role ID of a user in a specific organization using the id membership
-func (s *store) GetUserOrganizationRole(id uuid.UUID) (uuid.UUID, error) {
+func (s *store) GetRoleByMembership(membershipID uuid.UUID) (uuid.UUID, error) {
 	var roleID uuid.UUID
 	q := `SELECT role_id FROM organization_memberships WHERE id=$1`
-	if err := s.db.Get(&roleID, q, id); err != nil {
+	if err := s.db.Get(&roleID, q, membershipID); err != nil {
 		return uuid.UUID{}, err
 	}
 	return roleID, nil

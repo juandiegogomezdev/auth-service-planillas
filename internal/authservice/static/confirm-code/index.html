@@ -1,1 +1,42 @@
-This is a page to confirm email with a code
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <script src="config.js"></script>
+    <main>
+        <div id="formContainer">
+            <h2>Enter the code</h2>
+            <p class="description">Please enter the code you received in your email.</p>
+            <form id="confirmForm">
+                <div for="form-group">
+                    <label for="password1">Code</label>
+                    <input type="text" id="password1" required placeholder="xxx xxx" >    
+                    
+                </div>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+
+        <!-- <div class="successContainer">
+            <h2 id="successMessage">Correo confirmado</h2>
+            <p>Ingresa aqui: <strong><a id='loginLink' >Click aqui!</a></strong></p>
+        </div>
+        <div class="errorContainer">
+            <h2 id="errorMessage"></h2>
+            <p>Intentar nuevamente? <strong><a id = 'tryAgain'>Click aqui!</a></strong></p>
+        </div> -->
+        
+    </main>
+
+    <script>
+        const loginLink = document.getElementById('loginLink')
+        loginLink.href = window.APP_CONFIG.url_login
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>

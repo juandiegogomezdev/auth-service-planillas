@@ -9,23 +9,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type TokenizerJWT interface {
-	GenerateConfirmEmailToken(newEmail string) (string, error)
-	ParseConfirmEmailToken(tokenStr string) (*JWTConfirmEmailClaims, error)
-
-	GenerateLoginToken(email string) (string, error)
-	ParseLoginToken(tokenStr string) (*JWTLoginClaims, error)
-
-	GenerateAccessToken(userUUID uuid.UUID) (string, error)
-	ParseAccessToken(tokenStr string) (*JWTAccessClaims, error)
-}
-
-type tokenizerJWT struct{}
-
-func NewTokenizerJWT() TokenizerJWT {
-	return &tokenizerJWT{}
-}
-
 type JWTConfirmEmailClaims struct {
 	NewEmail string
 	jwt.RegisteredClaims
@@ -41,139 +24,122 @@ type JWTAccessClaims struct {
 	jwt.RegisteredClaims
 }
 
-func (t *tokenizerJWT) GenerateConfirmEmailToken(newEmail string) (string, error) {
+type JWTMembershipAccessClaims struct {
+	UserUUID       string
+	MembershipUUID string
+	jwt.RegisteredClaims
+}
+
+// --- helpers ---
+func signToken(claims jwt.Claims) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	tokenString, err := token.SignedString([]byte(config.JWT.JWTSecret))
+	if err != nil {
+		return "", fmt.Errorf("error signing token: %w", err)
+	}
+
+	return tokenString, nil
+}
+
+func parseToken(tokenString string, claims jwt.Claims) (jwt.Claims, error) {
+
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(config.JWT.JWTSecret), nil
+	}, jwt.WithValidMethods([]string{"HS256"}))
+
+	if err != nil {
+		return nil, fmt.Errorf("error parsing token: %w", err)
+	}
+
+	if !token.Valid {
+		return nil, fmt.Errorf("invalid token")
+	}
+	return claims, nil
+
+}
+
+// --- Generators
+
+func JWTGenerateConfirmEmailToken(newEmail string) (string, error) {
 	claims := JWTConfirmEmailClaims{
 		NewEmail: newEmail,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 200)),
 		},
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	tokenString, err := token.SignedString([]byte(config.Config.JWTSecret))
-	if err != nil {
-		return "", fmt.Errorf("error signing token: %w", err)
-	}
-
-	return tokenString, nil
+	return signToken(claims)
 }
 
-func (t *tokenizerJWT) GenerateLoginToken(email string) (string, error) {
+func JWTGenerateLoginToken(email string) (string, error) {
 	claims := JWTLoginClaims{
 		Email: email,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
 		},
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	tokenString, err := token.SignedString([]byte(config.Config.JWTSecret))
-	if err != nil {
-		return "", fmt.Errorf("error signing token: %w", err)
-	}
-
-	return tokenString, nil
+	return signToken(claims)
 }
 
-func (t *tokenizerJWT) GenerateAccessToken(userUUID uuid.UUID) (string, error) {
+func JWTGenerateAccessToken(userUUID uuid.UUID) (string, error) {
 	claims := JWTAccessClaims{
 		UserUUID: userUUID.String(),
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
 		},
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	tokenString, err := token.SignedString([]byte(config.Config.JWTSecret))
-	if err != nil {
-		return "", fmt.Errorf("error signing token: %w", err)
-	}
-
-	return tokenString, nil
-
+	return signToken(claims)
 }
 
-func (t *tokenizerJWT) ParseConfirmEmailToken(tokenString string) (*JWTConfirmEmailClaims, error) {
-	claims := &JWTConfirmEmailClaims{}
-
-	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte(config.Config.JWTSecret), nil
-	}, jwt.WithValidMethods([]string{"HS256"}))
-
-	if err != nil {
-		return nil, fmt.Errorf("error parsing token: %w", err)
+func JWTGenerateMembershipAccessToken(userUUID uuid.UUID, membershipUUID uuid.UUID) (string, error) {
+	claims := JWTMembershipAccessClaims{
+		UserUUID:       userUUID.String(),
+		MembershipUUID: membershipUUID.String(),
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
+		},
 	}
 
-	if !token.Valid {
-		return nil, fmt.Errorf("invalid token")
-	}
-
-	return claims, nil
+	return signToken(claims)
 }
 
-func (t *tokenizerJWT) ParseLoginToken(tokenString string) (*JWTLoginClaims, error) {
-	claims := &JWTLoginClaims{}
+// --- Parsers ---
 
-	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte(config.Config.JWTSecret), nil
-	}, jwt.WithValidMethods([]string{"HS256"}))
+func JWTParseConfirmEmailToken(tokenString string) (*JWTConfirmEmailClaims, error) {
+	parsedClaims, err := parseToken(tokenString, &JWTConfirmEmailClaims{})
 	if err != nil {
-		return nil, fmt.Errorf("error parsing token: %w", err)
+		return nil, err
 	}
 
-	if !token.Valid {
-		return nil, fmt.Errorf("invalid token")
-	}
-	return claims, nil
+	return parsedClaims.(*JWTConfirmEmailClaims), nil
 }
 
-func (t *tokenizerJWT) ParseAccessToken(tokenString string) (*JWTAccessClaims, error) {
-	claims := &JWTAccessClaims{}
-
-	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte(config.Config.JWTSecret), nil
-	}, jwt.WithValidMethods([]string{"HS256"}))
+func JWTParseLoginToken(tokenString string) (*JWTLoginClaims, error) {
+	parsedClaims, err := parseToken(tokenString, &JWTLoginClaims{})
 	if err != nil {
-		return nil, fmt.Errorf("error parsing token: %w", err)
+		return nil, err
 	}
 
-	if !token.Valid {
-		return nil, fmt.Errorf("invalid token")
-	}
-	return claims, nil
+	return parsedClaims.(*JWTLoginClaims), nil
 }
 
-// func (t *tokenizerJWT) GenerateAccessToken(userUUID string) (string, error) {
-// 	claims := JWTAccessClaims{
-// 		UserUUID: userUUID,
-// 		RegisteredClaims: jwt.RegisteredClaims{
-// 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 1)),
-// 		},
-// 	}
-// 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+func JWTParseAccessToken(tokenString string) (*JWTAccessClaims, error) {
+	parsedClaims, err := parseToken(tokenString, &JWTAccessClaims{})
+	if err != nil {
+		return nil, err
+	}
 
-// 	tokenString, err := token.SignedString(config.Config.JWTSecret)
-// 	if err != nil {
-// 		return "", err
-// 	}
+	return parsedClaims.(*JWTAccessClaims), nil
+}
 
-// 	return tokenString, nil
-// }
+func JWTParseMembershipAccessToken(tokenString string) (*JWTMembershipAccessClaims, error) {
+	parsedClaims, err := parseToken(tokenString, &JWTMembershipAccessClaims{})
+	if err != nil {
+		return nil, err
+	}
 
-// func (t *tokenizerJWT) ParseAccessToken(tokenString string) (*JWTAccessClaims, error) {
-// 	claims := &JWTAccessClaims{}
-
-// 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-// 		return config.Config.JWTSecret, nil
-// 	}, jwt.WithValidMethods([]string{"HS256"}))
-
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	if !token.Valid {
-// 		return nil, fmt.Errorf("invalid token")
-// 	}
-
-// 	return claims, nil
-// }
+	return parsedClaims.(*JWTMembershipAccessClaims), nil
+}

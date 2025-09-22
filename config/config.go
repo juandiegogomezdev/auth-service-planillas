@@ -1,13 +1,5 @@
 package config
 
-type ConfigVar struct {
-	JWTSecret string
-}
+import "os"
 
-func LoadConfig() ConfigVar {
-	return ConfigVar{
-		JWTSecret: GetEnv("JWT_SECRET", "supersecretkey"),
-	}
-}
-
-var Config = LoadConfig()
+var STATIC_CONFIRM_EMAIL_URL = os.Getenv("REGISTER_CONFIRM_URL")

@@ -1,6 +1,6 @@
 #! /bin/bash
 
-cd ../internal/migrations
+cd ../migrations
 
 archivos=$(ls *.up.sql)
 

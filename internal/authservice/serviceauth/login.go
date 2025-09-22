@@ -2,6 +2,7 @@ package serviceauth
 
 import (
 	"fmt"
+	"proyecto/internal/shared/tokenizer"
 	"proyecto/internal/shared/utils"
 )
 
@@ -26,7 +27,7 @@ func (s *ServiceAuth) Login(email string, password string) (string, LoginStatus,
 	}
 
 	// Generate JWT token
-	token, err := s.tokenizer.GenerateLoginToken(user.Email)
+	token, err := tokenizer.JWTGenerateLoginToken(user.Email)
 	if err != nil {
 		return "", LoginStatusSuccess, fmt.Errorf("error generating login token: %w", err)
 	}
@@ -43,7 +44,7 @@ const (
 )
 
 func (s *ServiceAuth) ConfirmLoginCode(token string, code string) (string, ConfirmLoginStatus, error) {
-	tokenPayload, err := s.tokenizer.ParseLoginToken(token)
+	tokenPayload, err := tokenizer.JWTParseLoginToken(token)
 	if err != nil {
 		return "", ConfirmLoginStatusInvalidToken, fmt.Errorf("error parsing login token: %w", err)
 	}
@@ -59,7 +60,7 @@ func (s *ServiceAuth) ConfirmLoginCode(token string, code string) (string, Confi
 	}
 
 	// Generate new JWT token
-	newToken, err := s.tokenizer.GenerateAccessToken(verificationInfo.ID)
+	newToken, err := tokenizer.JWTGenerateAccessToken(verificationInfo.ID)
 	if err != nil {
 		return "", ConfirmLoginStatusInvalidToken, fmt.Errorf("error generating new login token: %w", err)
 	}

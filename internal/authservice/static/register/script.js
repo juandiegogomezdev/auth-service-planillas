@@ -1,18 +1,14 @@
 document.getElementById('registerForm').addEventListener('submit', async function (e) {
   const formContainer = document.getElementById('formContainer')
   const successfulContainer = document.getElementById('successfulContainer')
-  const errorContainer = document.getElementById('errorContainer')
-
+  const errorMessage = document.getElementsByClassName('errorMessage')[0]
   e.preventDefault()
 
   const params = new URLSearchParams(window.location.search)
   const token = params.get('token')
 
   const email = document.getElementById('email').value
-  const succesfulMessage = document.getElementById('succesfulMessage')
-  const errorMessage = document.getElementById('errorMessage')
 
-  formContainer.style.display = 'none'
   try {
     const response = await fetch(window.APP_CONFIG.url_register, {
       method: 'POST',
@@ -22,11 +18,19 @@ document.getElementById('registerForm').addEventListener('submit', async functio
       body: JSON.stringify({ email, token })
 
     })
-    if (!response.ok) throw new Error('Ocurrio algun problema')
+    if (!response.ok) {
+      errorMessage.textContent = await response.text()
+      errorMessage.style.display = 'block'
+      return
+    }
+    else {
+      errorMessage.style.display = 'none'
+      formContainer.style.display = 'none'
+      successfulContainer.style.display = 'block'
+    }
 
-    const data = await response.json()
-    successfulContainer.style.display = 'block'
+    
   } catch {
-    errorContainer.style.display = 'block'
+    errorMessage.style.display = 'block'
   }
 })

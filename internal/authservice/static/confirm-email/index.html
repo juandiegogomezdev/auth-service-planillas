@@ -11,6 +11,10 @@
     <main>
         <div id="formContainer">
             <h2>Crear contrasenia</h2>
+            <div class="successContainer">
+                <h2 id="successMessage">Correo confirmado</h2>
+                <p>Ingresa aqui: <strong><a id='loginLink' >Click aqui!</a></strong></p>
+            </div>
             <form id="confirmForm">
                 <div for="form-group">
                     <label for="password1">Contrasenia</label>
@@ -31,10 +35,7 @@
                 <li><i class="fa-solid fa-circle-xmark" id="check-special"></i>Al menos un caracter especial</li>
             </ul>
         </div>
-        <div class="successContainer">
-            <h2 id="successMessage">Correo confirmado</h2>
-            <p>Ingresa aqui: <strong><a id='loginLink' >Click aqui!</a></strong></p>
-        </div>
+        
         <div class="errorContainer">
             <h2 id="errorMessage"></h2>
             <p>Intentar nuevamente? <strong><a id = 'tryAgain'>Click aqui!</a></strong></p>

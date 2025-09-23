@@ -2,8 +2,10 @@ package transport
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"proyecto/internal/authservice/apperrors"
 	"proyecto/internal/authservice/dtoauth"
 	"proyecto/internal/authservice/serviceauth"
 )
@@ -15,27 +17,27 @@ func (h *Handler) handlerRegister(w http.ResponseWriter, r *http.Request) {
 		err := json.NewDecoder(r.Body).Decode(&reg)
 		if err != nil {
 			log.Println("Error decoding request payload:", err)
-			http.Error(w, "Invalid request payload", http.StatusBadRequest)
+			http.Error(w, "Internal Server Error", http.StatusBadRequest)
 			return
 		}
 		r.Body.Close()
 
-		status, err := h.service.RegisterUser(reg.Email)
+		err = h.service.RegisterUser(reg.Email)
 		if err != nil {
+			if appErr, ok := err.(*apperrors.SError); ok {
+				switch appErr.Code {
+				case "user_exists":
+					http.Error(w, "User already exists", http.StatusConflict)
+					return
+				}
+			}
 			log.Println("Error registering user:", err)
 			http.Error(w, "Error registering user", http.StatusInternalServerError)
 			return
 		}
-
-		switch status {
-		case serviceauth.RegisterUserStatusUserExists:
-			http.Error(w, "User already exists", http.StatusConflict)
-			return
-		case serviceauth.RegisterUserStatusConfirmationSent:
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("Confirmation email sent"))
-			return
-		}
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("Check your email for confirmation link"))
+		return
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
@@ -47,6 +49,7 @@ func (h *Handler) handlerRegisterConfirm(w http.ResponseWriter, r *http.Request)
 		var body dtoauth.RegisterConfirmRequest
 		err := json.NewDecoder(r.Body).Decode(&body)
 		if err != nil {
+			fmt.Println("Error decoding request payload:", err)
 			http.Error(w, "Invalid request payload", http.StatusBadRequest)
 			return
 		}

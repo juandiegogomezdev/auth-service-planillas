@@ -2,11 +2,10 @@ package transport
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
+	"proyecto/internal/authservice/apperrors"
 	"proyecto/internal/authservice/dtoauth"
-	"proyecto/internal/authservice/serviceauth"
 	"proyecto/internal/shared/utils"
 )
 
@@ -19,25 +18,34 @@ func (h *Handler) handlerLogin(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid request payload", http.StatusBadRequest)
 			return
 		}
+
 		r.Body.Close()
 
-		token, status, err := h.service.Login(body.Email, body.Password)
+		token, err := h.service.Login(body.Email, body.Password)
 		if err != nil {
-			log.Println("Error logging in. ", err)
-			http.Error(w, "Error logging in", http.StatusInternalServerError)
+			if appErr, ok := err.(*apperrors.SError); ok {
+				switch appErr.Code {
+				case "user_not_found":
+					http.Error(w, "User not found", http.StatusNotFound)
+				case "password_incorrect":
+					http.Error(w, "Password incorrect", http.StatusUnauthorized)
+				case "token_generation":
+					http.Error(w, "Token generation error", http.StatusInternalServerError)
+				default:
+					http.Error(w, "Internal server error", http.StatusInternalServerError)
+				}
+				return
+
+			}
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			log.Println("Unexpected error type:", err)
 			return
 		}
 
-		switch status {
-		case serviceauth.LoginStatusInvalidCredentials:
-			http.Error(w, "Invalid credentials", http.StatusUnauthorized)
-		case serviceauth.LoginStatusUserNotFound:
-			http.Error(w, "User not found", http.StatusNotFound)
-		case serviceauth.LoginStatusSuccess:
-			utils.SetCookie(w, "access_token", token)
-			w.Header().Set("Content-Type", "text/plain")
-			w.Write([]byte("Login successful"))
-		}
+		utils.SetCookie(w, "access_token", token)
+		w.Header().Set("Content-Type", "text/plain")
+		w.Write([]byte("Login successful"))
+
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
@@ -60,25 +68,34 @@ func (h *Handler) handlerLoginConfirmCode(w http.ResponseWriter, r *http.Request
 			http.Error(w, "Missing or invalid token", http.StatusUnauthorized)
 			return
 		}
-		fmt.Println("Token from cookie:", token)
 
-		token, status, err := h.service.ConfirmLoginCode(token, body.Code)
+		token, err = h.service.ConfirmLoginCode(token, body.Code)
 		if err != nil {
-			log.Println("Error confirming login code:", err)
+			if appErr, ok := err.(*apperrors.SError); ok {
+				switch appErr.Code {
+				case "token_parsing":
+					http.Error(w, "Invalid token", http.StatusUnauthorized)
+				case "verification_not_found":
+					http.Error(w, "Verification info not found", http.StatusNotFound)
+				case "invalid_code":
+					http.Error(w, "Invalid code", http.StatusUnauthorized)
+				case "code_expired":
+					http.Error(w, "Code has expired", http.StatusUnauthorized)
+				case "token_generation":
+					http.Error(w, "Token generation error", http.StatusInternalServerError)
+				default:
+					http.Error(w, "Internal server error", http.StatusInternalServerError)
+				}
+				return
+			}
+
 			http.Error(w, "Error confirming login code", http.StatusInternalServerError)
 			return
 		}
 
-		switch status {
-		case serviceauth.ConfirmLoginInvalidCode:
-			http.Error(w, "Invalid code", http.StatusUnauthorized)
-		case serviceauth.ConfirmLoginStatusInvalidToken:
-			http.Error(w, "Invalid token", http.StatusUnauthorized)
-		case serviceauth.ConfirmLoginStatusSuccess:
-			utils.SetCookie(w, "access_token", token)
-			w.Header().Set("Content-Type", "plain/text")
-			w.Write([]byte("Login confirmed successfully"))
-		}
+		utils.SetCookie(w, "access_token", token)
+		w.Header().Set("Content-Type", "plain/text")
+		w.Write([]byte("Login confirmed successfully"))
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}

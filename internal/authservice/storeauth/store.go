@@ -83,19 +83,21 @@ func (s *store) GetByEmail(email string) (*modelauth.User, error) {
 }
 
 type VerificationInfo struct {
-	Code string
-	ID   uuid.UUID
+	Code      string
+	ID        uuid.UUID
+	ExpiresAt time.Time
 }
 
 func (s *store) GetVerificationByEmail(email string) (VerificationInfo, error) {
-	q := `SELECT code, id FROM email_verifications where id = (SELECT id FROM users WHERE email=$1)`
+	q := `SELECT code, id, expired_at FROM email_verifications where id = (SELECT id FROM users WHERE email=$1)`
 	row := s.db.QueryRow(q, email)
 
 	var code string
 	var id uuid.UUID
-	err := row.Scan(&code, &id)
+	var expiresAt time.Time
+	err := row.Scan(&code, &id, &expiresAt)
 	if err != nil {
 		return VerificationInfo{}, err
 	}
-	return VerificationInfo{Code: code, ID: id}, nil
+	return VerificationInfo{Code: code, ID: id, ExpiresAt: expiresAt}, nil
 }

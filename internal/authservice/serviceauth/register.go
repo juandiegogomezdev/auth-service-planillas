@@ -1,8 +1,9 @@
 package serviceauth
 
 import (
-	"log"
+	"fmt"
 	"proyecto/config"
+	"proyecto/internal/authservice/apperrors"
 	"proyecto/internal/authservice/modelauth"
 	"proyecto/internal/shared/tokenizer"
 	"proyecto/internal/shared/utils"
@@ -12,35 +13,25 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type RegisterUserStatus int
-
-const (
-	RegisterUserStatusUserExists RegisterUserStatus = iota
-	RegisterUserStatusConfirmationSent
-)
-
-func (s *ServiceAuth) RegisterUser(email string) (RegisterUserStatus, error) {
+func (s *ServiceAuth) RegisterUser(email string) error {
 	exists, err := s.store.ExistUser(email)
 	if err != nil {
-		return 0, err
+		return fmt.Errorf("error checking if user exists: %w", err)
 	}
 	if exists {
-		return RegisterUserStatusUserExists, nil
+		return apperrors.WrapSerror("user_exists", fmt.Errorf("user already exists"))
 	}
 
+	// Generate a token with the email
 	token, err := tokenizer.JWTGenerateConfirmEmailToken(email)
 	if err != nil {
-		return 0, err
+		return fmt.Errorf("error generating confirmation token: %w", err)
 	}
 
 	// Send confirmation email
 	go s.mailer.Send(email, "Confirm your email", "Confirm your email: <a href='"+config.STATIC_CONFIRM_EMAIL_URL+"?token="+token+"'>Click here</a>")
-	if err != nil {
-		log.Println("Error sending email:", err)
-		return 0, err
-	}
 
-	return RegisterUserStatusConfirmationSent, nil
+	return nil
 }
 
 type CreateUserStatus int
@@ -57,6 +48,9 @@ func (s *ServiceAuth) CreateUser(token string, password string) (CreateUserStatu
 	}
 
 	email := claims.NewEmail
+
+	fmt.Println("Creating user with email:", email)
+	fmt.Println("Password:", password)
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {

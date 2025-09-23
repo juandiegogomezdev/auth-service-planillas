@@ -17,10 +17,10 @@ document.getElementById('loginForm').addEventListener('submit', async function (
 
 
     if (!response.ok) {
+      errorMessage.textContent = await response.text()
       errorMessage.style.display = 'block'
     } else {
-      console.log("redirecting to:", window.APP_CONFIG.url_login_confirm)
-      window.location.href = window.APP_CONFIG.url_login_confirm
+      window.location.href = window.APP_CONFIG.url_page_login_confirm
     }
   } catch (error) {
     console.log(error)

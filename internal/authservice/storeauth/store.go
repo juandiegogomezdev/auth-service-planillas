@@ -89,7 +89,7 @@ type VerificationInfo struct {
 }
 
 func (s *store) GetVerificationByEmail(email string) (VerificationInfo, error) {
-	q := `SELECT code, id, expired_at FROM email_verifications where id = (SELECT id FROM users WHERE email=$1)`
+	q := `SELECT code, id, expires_at FROM email_verifications where id = (SELECT id FROM users WHERE email=$1)`
 	row := s.db.QueryRow(q, email)
 
 	var code string

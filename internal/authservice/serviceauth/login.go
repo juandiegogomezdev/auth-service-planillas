@@ -30,7 +30,7 @@ func (s *ServiceAuth) Login(email string, password string) (string, error) {
 	}
 
 	// Generate JWT token
-	token, err := tokenizer.JWTGenerateLoginToken(user.Email)
+	token, err := tokenizer.JWTGenerateConfirmLoginToken(user.Email)
 	if err != nil {
 		return "", apperrors.WrapSerror("token_generation", fmt.Errorf("error generating login token: %w", err))
 	}
@@ -42,10 +42,12 @@ func (s *ServiceAuth) Login(email string, password string) (string, error) {
 }
 
 func (s *ServiceAuth) ConfirmLoginCode(token string, code string) (string, error) {
-	tokenPayload, err := tokenizer.JWTParseLoginToken(token)
+	tokenPayload, err := tokenizer.JWTParseConfirmLoginToken(token)
 	if err != nil {
 		return "", apperrors.WrapSerror("token_parsing", fmt.Errorf("error parsing login token: %w", err))
 	}
+
+	fmt.Println("Token payload:", tokenPayload.Email)
 
 	verificationInfo, err := s.store.GetVerificationByEmail(tokenPayload.Email)
 	if err != nil {
@@ -62,7 +64,7 @@ func (s *ServiceAuth) ConfirmLoginCode(token string, code string) (string, error
 	}
 
 	// Generate new JWT token
-	newToken, err := tokenizer.JWTGenerateAccessToken(verificationInfo.ID)
+	newToken, err := tokenizer.JWTGenerateOrgSelectToken(verificationInfo.ID)
 	if err != nil {
 		return "", apperrors.WrapSerror("token_generation", fmt.Errorf("error generating new login token: %w", err))
 	}

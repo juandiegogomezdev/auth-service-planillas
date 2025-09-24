@@ -23,7 +23,7 @@ func (s *ServiceAuth) RegisterUser(email string) error {
 	}
 
 	// Generate a token with the email
-	token, err := tokenizer.JWTGenerateConfirmEmailToken(email)
+	token, err := tokenizer.JWTGenerateConfirmRegisterToken(email)
 	if err != nil {
 		return fmt.Errorf("error generating confirmation token: %w", err)
 	}
@@ -34,17 +34,10 @@ func (s *ServiceAuth) RegisterUser(email string) error {
 	return nil
 }
 
-type CreateUserStatus int
-
-const (
-	CreateUserStatusUserExists CreateUserStatus = iota
-	CreateUserStatusUserCreated
-)
-
-func (s *ServiceAuth) CreateUser(token string, password string) (CreateUserStatus, error) {
-	claims, err := tokenizer.JWTParseConfirmEmailToken(token)
+func (s *ServiceAuth) CreateUser(token string, password string) error {
+	claims, err := tokenizer.JWTParseConfirmRegisterToken(token)
 	if err != nil {
-		return 0, err
+		return apperrors.WrapSerror("invalid_token", fmt.Errorf("invalid or expired token: %w", err))
 	}
 
 	email := claims.NewEmail
@@ -54,7 +47,7 @@ func (s *ServiceAuth) CreateUser(token string, password string) (CreateUserStatu
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return 0, err
+		return fmt.Errorf("error hashing password: %w", err)
 	}
 
 	code := utils.GenerateCode(6)
@@ -63,10 +56,10 @@ func (s *ServiceAuth) CreateUser(token string, password string) (CreateUserStatu
 
 	exist, err := s.store.ExistUser(email)
 	if err != nil {
-		return 0, err
+		return fmt.Errorf("error checking if user exists: %w", err)
 	}
 	if exist {
-		return CreateUserStatusUserExists, nil
+		return apperrors.WrapSerror("user_exists", fmt.Errorf("user already exists"))
 	}
 
 	err = s.store.CreateUser(&modelauth.User{
@@ -77,8 +70,8 @@ func (s *ServiceAuth) CreateUser(token string, password string) (CreateUserStatu
 	}, code, createdAt, expiresAt)
 
 	if err != nil {
-		return 0, err
+		return apperrors.WrapSerror("user_creation", fmt.Errorf("error creating user: %w", err))
 	}
 
-	return CreateUserStatusUserCreated, nil
+	return nil
 }

@@ -15,24 +15,28 @@ main {
     justify-content: center;
 }
 
-#formContainer {
-    width: 400px;
-    height: fit-content;
-    margin: auto;
-}
 h2 {
     text-align: center;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
     font-size: 2rem
 }
 
 .description {
     text-align: center;
+    margin-bottom: 15px;
 }
 
+#errorMessage {
+    width: 100%;
+    padding: 20px 20px;
+    background-color: #fff6f6;
+    border-radius: 15px;
 
-#confirmForm {
-    margin-top: 10px;
+    font-size: 1.0rem;
+    font-weight: 500;
+    color:crimson;
+    display: none; 
+    margin: 10px 0;                   
 }
 
 label, input {
@@ -77,9 +81,6 @@ button:hover {
     cursor: pointer;
     opacity: 0.9;
 }
-h4 {
-    margin-bottom: 8px;
-}
 
 li {
     list-style: none;
@@ -94,41 +95,4 @@ i {
     margin-right: 6px;
     color: gray;
 
-}
-
-.errorValidation {
-    color: lightcoral;
-}
-
-
-.successContainer {
-    width: 400px;
-    margin: auto;
-    padding: 20px 20px;
-
-    border: solid 0.1px;
-    border-color: green;
-    background-color: #f6fff1;
-    border-radius: 20px;
-    display: none;
-}
-
-
-.errorContainer {
-    width: 400px;
-    margin: auto;
-    padding: 20px 20px;
-
-    border: solid 0.1px;
-    border-color: lightcoral;
-    background-color:  #fff6f6  ;
-    border-radius: 20px;
-
-    display: none;
-}
-
-
-#tryAgain {
-    color: lightseagreen;
-    text-decoration: underline;
 }

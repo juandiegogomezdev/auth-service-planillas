@@ -1,17 +1,7 @@
 const params = new URLSearchParams(window.location.search)
 const token = params.get('token')
 
-document.addEventListener('DOMContentLoaded', () => {
-  const confirmForm = document.getElementById('confirmForm')
-  const tryAgain = document.getElementById('tryAgain')
-  const password1 = document.getElementById('password1')
-  const password2 = document.getElementById('password2')
-
-  const formContainer = document.getElementById('formContainer')
-  const errorContainer = document.querySelector('.errorContainer')
-  const successContainer = document.querySelector('.successContainer')
-
-  function validarContrasenia (pass) {
+function validarContrasenia (pass) {
     return [
       pass.length >= 8, // Minimo 8 letras
       /[A-Z]/.test(pass), // Al menos una letrea mayuscula
@@ -21,11 +11,25 @@ document.addEventListener('DOMContentLoaded', () => {
     ]
   }
 
+
+document.addEventListener('DOMContentLoaded', () => {
+
+  const confirmForm = document.getElementById('confirmForm')
+  const tryAgain = document.getElementById('tryAgain')
+  const password1 = document.getElementById('password1')
+  const password2 = document.getElementById('password2')
+
+  
+  const formContainer = document.getElementById('formContainer')
+  const errorContainer = document.getElementById('errorContainer')
+  const successContainer = document.getElementById('successContainer')
+
+
+  const errorMessage1 = document.getElementsByClassName('errorMessage')[0]
+  const errorMessage2 = document.getElementById('errorMessageFetch')
+
   confirmForm.addEventListener('submit', async function (e) {
     e.preventDefault()
-
-    const errorMessage = document.getElementById('errorMessage')
-    const successMessage = document.getElementById('successMessage')
 
     const pass1 = password1.value.trim()
     const pass2 = password2.value.trim()
@@ -40,11 +44,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const requirementsOk = validations.every(Boolean)
 
     if (!requirementsOk) {
-      return alert('La contrasenia no cumple todos los requisitos.')
+      errorMessage1.textContent = 'La contrasenia no cumple todos los requisitos.'
+      errorMessage1.style.display = 'block'
+      return
     }
 
     if (pass1 !== pass2) {
-      return alert('Las contrasenias no coinciden.')
+      errorMessage1.textContent = 'Las contrasenias no coinciden.'
+      errorMessage1.style.display = 'block'
+      return
     }
 
     formContainer.style.display = 'none'
@@ -55,17 +63,23 @@ document.addEventListener('DOMContentLoaded', () => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ contrasenia: pass1, token })
+        body: JSON.stringify({ password: pass1, token })
       })
 
-      if (!response.ok) throw new Error('Error al crear el usuario')
+      if (!response.ok) {
+        errorContainer.style.display = 'block'
+        errorMessage2.textContent = await response.text()
+        return
+      }
+      else {
+        formContainer.style.display = 'none'
+        successContainer.style.display = 'block'
+      }
 
-      successContainer.style.display = 'block'
-      successMessage.textContent = 'Registro completado!'
+
     } catch (error) {
-      console.log(error)
-      errorContainer.style.display = 'block'
-      errorMessage.textContent = 'Error en el servidor!'
+      errorMessage2.style.display = 'block'
+      errorMessage2.textContent = 'Oops, Ocurrio algun error!'
     }
   })
 
@@ -84,6 +98,8 @@ function updateIcon (id, condition) {
     icon.style.color = 'lightgreen'
   } else {
     icon.classList.add('fa-circle-xmark')
-    icon.style.color = 'lightcoral'
+    icon.style.color = 'red'
   }
 }
+
+

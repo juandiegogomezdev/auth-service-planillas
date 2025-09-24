@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"proyecto/internal/authservice/apperrors"
 	"proyecto/internal/authservice/dtoauth"
-	"proyecto/internal/authservice/serviceauth"
 )
 
 func (h *Handler) handlerRegister(w http.ResponseWriter, r *http.Request) {
@@ -55,22 +54,30 @@ func (h *Handler) handlerRegisterConfirm(w http.ResponseWriter, r *http.Request)
 		}
 		r.Body.Close()
 
-		status, err := h.service.CreateUser(body.Token, body.Password)
+		fmt.Println("Received body:", body)
+
+		err = h.service.CreateUser(body.Token, body.Password)
 		if err != nil {
-			log.Println("Error creating user:", err)
-			http.Error(w, "Error creating user", http.StatusInternalServerError)
-			return
+			if appErr, ok := err.(*apperrors.SError); ok {
+				switch appErr.Code {
+				case "invalid_token":
+					http.Error(w, "Invalid or expired link", http.StatusBadRequest)
+					return
+				case "user_exists":
+					http.Error(w, "User already exists", http.StatusConflict)
+					return
+				case "user_creation":
+					http.Error(w, "Error creating user", http.StatusInternalServerError)
+					return
+				}
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+
 		}
 
-		switch status {
-		case serviceauth.CreateUserStatusUserExists:
-			http.Error(w, "User already exists", http.StatusConflict)
-		case serviceauth.CreateUserStatusUserCreated:
-			w.WriteHeader(http.StatusCreated)
-			w.Write([]byte("User created successfully"))
-		default:
-			w.WriteHeader(http.StatusOK)
-		}
+		w.Write([]byte("User created successfully"))
+		return
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}

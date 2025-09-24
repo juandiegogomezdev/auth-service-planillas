@@ -9,25 +9,43 @@ import (
 	"github.com/google/uuid"
 )
 
-type JWTConfirmEmailClaims struct {
-	NewEmail string
+type TokenType string
+
+const (
+	TokenTypeConfirmRegister TokenType = "confirm_register"
+	TokenTypeConfirmLogin    TokenType = "confirm_login"
+	TokenTypeOrgSelect       TokenType = "org_select"
+	TokenTypeAppAccess       TokenType = "app_access"
+)
+
+type BaseClaims struct {
+	TokenType string `json:"type"`
 	jwt.RegisteredClaims
 }
 
-type JWTLoginClaims struct {
-	Email string
-	jwt.RegisteredClaims
+// Used for ConfirmEmailHandler
+type ConfirmRegisterClaims struct {
+	NewEmail string `json:"new_email"`
+	BaseClaims
 }
 
-type JWTAccessClaims struct {
-	UserUUID string
-	jwt.RegisteredClaims
+// Used for ConfirmLoginHandler
+type ConfirmLoginClaims struct {
+	Email string `json:"email"`
+	BaseClaims
 }
 
-type JWTMembershipAccessClaims struct {
-	UserUUID       string
-	MembershipUUID string
-	jwt.RegisteredClaims
+// Used for orgSelectHandler
+type orgSelectClaims struct {
+	UserUUID string `json:"user_uuid"`
+	BaseClaims
+}
+
+// used for access to general endpoints
+type AppAccessClaims struct {
+	UserUUID       string `json:"user_uuid"`
+	MembershipUUID string `json:"membership_uuid"`
+	BaseClaims
 }
 
 // --- helpers ---
@@ -61,45 +79,61 @@ func parseToken(tokenString string, claims jwt.Claims) (jwt.Claims, error) {
 
 // --- Generators
 
-func JWTGenerateConfirmEmailToken(newEmail string) (string, error) {
-	claims := JWTConfirmEmailClaims{
+// Generate a token for confirm register
+func JWTGenerateConfirmRegisterToken(newEmail string) (string, error) {
+	claims := ConfirmRegisterClaims{
 		NewEmail: newEmail,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 200)),
+		BaseClaims: BaseClaims{
+			TokenType: string(TokenTypeConfirmRegister),
+			RegisteredClaims: jwt.RegisteredClaims{
+				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 30)),
+			},
 		},
 	}
 
 	return signToken(claims)
 }
 
-func JWTGenerateLoginToken(email string) (string, error) {
-	claims := JWTLoginClaims{
+// Generate a token for confirm login
+func JWTGenerateConfirmLoginToken(email string) (string, error) {
+	claims := ConfirmLoginClaims{
 		Email: email,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
+		BaseClaims: BaseClaims{
+			TokenType: string(TokenTypeConfirmLogin),
+			RegisteredClaims: jwt.RegisteredClaims{
+				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
+			},
 		},
 	}
 
 	return signToken(claims)
 }
 
-func JWTGenerateAccessToken(userUUID uuid.UUID) (string, error) {
-	claims := JWTAccessClaims{
+// Generate a token for org selection
+func JWTGenerateOrgSelectToken(userUUID uuid.UUID) (string, error) {
+	claims := orgSelectClaims{
 		UserUUID: userUUID.String(),
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
+		BaseClaims: BaseClaims{
+			TokenType: string(TokenTypeOrgSelect),
+			RegisteredClaims: jwt.RegisteredClaims{
+				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
+			},
 		},
 	}
 
 	return signToken(claims)
 }
 
-func JWTGenerateMembershipAccessToken(userUUID uuid.UUID, membershipUUID uuid.UUID) (string, error) {
-	claims := JWTMembershipAccessClaims{
+// Generate a token for app access
+func JWTGenerateAppAccessToken(userUUID uuid.UUID, membershipUUID uuid.UUID) (string, error) {
+	claims := AppAccessClaims{
 		UserUUID:       userUUID.String(),
 		MembershipUUID: membershipUUID.String(),
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
+		BaseClaims: BaseClaims{
+			TokenType: string(TokenTypeAppAccess),
+			RegisteredClaims: jwt.RegisteredClaims{
+				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
+			},
 		},
 	}
 
@@ -108,38 +142,42 @@ func JWTGenerateMembershipAccessToken(userUUID uuid.UUID, membershipUUID uuid.UU
 
 // --- Parsers ---
 
-func JWTParseConfirmEmailToken(tokenString string) (*JWTConfirmEmailClaims, error) {
-	parsedClaims, err := parseToken(tokenString, &JWTConfirmEmailClaims{})
+// Parse the token for confirm register
+func JWTParseConfirmRegisterToken(tokenString string) (*ConfirmRegisterClaims, error) {
+	parsedClaims, err := parseToken(tokenString, &ConfirmRegisterClaims{})
 	if err != nil {
 		return nil, err
 	}
 
-	return parsedClaims.(*JWTConfirmEmailClaims), nil
+	return parsedClaims.(*ConfirmRegisterClaims), nil
 }
 
-func JWTParseLoginToken(tokenString string) (*JWTLoginClaims, error) {
-	parsedClaims, err := parseToken(tokenString, &JWTLoginClaims{})
+// Parse the token for confirm login
+func JWTParseConfirmLoginToken(tokenString string) (*ConfirmLoginClaims, error) {
+	parsedClaims, err := parseToken(tokenString, &ConfirmLoginClaims{})
 	if err != nil {
 		return nil, err
 	}
 
-	return parsedClaims.(*JWTLoginClaims), nil
+	return parsedClaims.(*ConfirmLoginClaims), nil
 }
 
-func JWTParseAccessToken(tokenString string) (*JWTAccessClaims, error) {
-	parsedClaims, err := parseToken(tokenString, &JWTAccessClaims{})
+// Parse the token for org selection
+func JWTParseOrgSelectToken(tokenString string) (*orgSelectClaims, error) {
+	parsedClaims, err := parseToken(tokenString, &orgSelectClaims{})
 	if err != nil {
 		return nil, err
 	}
 
-	return parsedClaims.(*JWTAccessClaims), nil
+	return parsedClaims.(*orgSelectClaims), nil
 }
 
-func JWTParseMembershipAccessToken(tokenString string) (*JWTMembershipAccessClaims, error) {
-	parsedClaims, err := parseToken(tokenString, &JWTMembershipAccessClaims{})
+// Parse the token for app access
+func JWTParseMembershipAccessToken(tokenString string) (*AppAccessClaims, error) {
+	parsedClaims, err := parseToken(tokenString, &AppAccessClaims{})
 	if err != nil {
 		return nil, err
 	}
 
-	return parsedClaims.(*JWTMembershipAccessClaims), nil
+	return parsedClaims.(*AppAccessClaims), nil
 }

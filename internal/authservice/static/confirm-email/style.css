@@ -22,18 +22,31 @@ main {
 }
 h2 {
     text-align: center;
-    margin-bottom: 35px;
+    margin-bottom: 15px;
     font-size: 2rem
 }
 
+.errorMessage {
+    width: 100%;
+    padding: 20px 20px;
+    background-color: #fff6f6;
+    border-radius: 15px;
+
+    font-size: 1.0rem;
+    font-weight: 500;
+    color:crimson;
+    display: none; 
+    margin-bottom: 10px;                   
+}
+
 #confirmForm {
-    margin-bottom: 30px;
+    margin-bottom: 25px;
 }
 
 
 .form-group {
     display: block;
-    margin: 20px 0;
+    margin: 10px 0;
     
 }
 
@@ -48,7 +61,7 @@ label {
     opacity: 0.9;
 }
 input {
-    margin-top: 9px;
+    margin-top: 5px;
     padding: 9px 11px;
     border: solid 0.5px;
     border-color: rgb(231, 231, 231);
@@ -79,30 +92,46 @@ button:hover {
     opacity: 0.9;
 }
 h4 {
-    margin-bottom: 8px;
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: black;
+    opacity: 0.9;
+    margin-bottom: 10px;
 }
 
 li {
     list-style: none;
     display: flex;
     align-items: center;
-    margin-top: 2px;
+    padding: 5px 7px;
+    border-radius: 8px;
+    font-weight: 400;
+    color: oklch(37.1% 0 0);
 }
 
 i {
     font-size: 12px;
-    margin-left: 4px;
     margin-right: 6px;
-    color: gray;
+    color: red;
 
 }
 
-.errorValidation {
-    color: lightcoral;
+#errorContainer {
+    width: 100%;
+    max-width: 350px;
+    padding: 20px 20px;
+    background-color: #fff6f6;
+    border-radius: 15px;
+
+    font-size: 1.0rem;
+    font-weight: 500;
+    color:crimson;
+    margin-bottom: 10px;     
+    display: none;              
 }
 
 
-.successContainer {
+#successContainer {
     width: 100%;
     max-width: 350px;
     margin: auto;
@@ -113,21 +142,6 @@ i {
     border-radius: 20px;
     display: block;
 }
-
-
-
-.errorContainer {
-    width: 400px;
-    margin: auto;
-    padding: 20px 20px;
-
-    border: solid 0.1px;
-    border-color: lightcoral;
-    background-color:  #fff6f6  ;
-    border-radius: 20px;
-
-}
-
 
 #tryAgain {
     color: lightseagreen;

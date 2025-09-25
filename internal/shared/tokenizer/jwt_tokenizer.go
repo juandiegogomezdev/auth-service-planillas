@@ -16,6 +16,7 @@ const (
 	TokenTypeConfirmLogin    TokenType = "confirm_login"
 	TokenTypeOrgSelect       TokenType = "org_select"
 	TokenTypeAppAccess       TokenType = "app_access"
+	TokenTypeUnkown          TokenType = "unknown"
 )
 
 type BaseClaims struct {
@@ -48,6 +49,18 @@ type AppAccessClaims struct {
 	BaseClaims
 }
 
+// --- Identify token type ---
+func IdentifyTokenType(tokenString string) (TokenType, error) {
+	parsedClaims, err := parseToken(tokenString, &BaseClaims{})
+	if err != nil {
+		return "", err
+	}
+
+	claims := parsedClaims.(*BaseClaims)
+
+	return TokenType(claims.TokenType), nil
+}
+
 // --- helpers ---
 func signToken(claims jwt.Claims) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -73,7 +86,7 @@ func parseToken(tokenString string, claims jwt.Claims) (jwt.Claims, error) {
 	if !token.Valid {
 		return nil, fmt.Errorf("invalid token")
 	}
-	return claims, nil
+	return token.Claims, nil
 
 }
 

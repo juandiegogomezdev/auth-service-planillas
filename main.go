@@ -35,7 +35,7 @@ func main() {
 
 	// Serve static of login, register and confirm pages
 	fs := http.FileServer(http.Dir("./internal/authservice/static"))
-	mainMux.Handle("/static/", http.StripPrefix("/static/", fs))
+	mainMux.Handle("/static/", http.StripPrefix("/static/", middleware.RedirectBeforeSendStaticFiles(fs)))
 
 	fmt.Println("Services running in http://localhost:8080")
 	http.ListenAndServe(":8080", mainMux)

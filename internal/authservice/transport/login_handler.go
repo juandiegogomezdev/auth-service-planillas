@@ -42,7 +42,7 @@ func (h *Handler) handlerLogin(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		utils.SetCookie(w, "access_token", token)
+		utils.SetCookie(w, "auth_token", token)
 		w.Header().Set("Content-Type", "text/plain")
 		w.Write([]byte("Login successful"))
 
@@ -63,13 +63,13 @@ func (h *Handler) handlerLoginConfirmCode(w http.ResponseWriter, r *http.Request
 		}
 		r.Body.Close()
 
-		token, err := utils.GetCookie(r, "access_token")
+		tokenConfirmLogin, err := utils.GetCookie(r, "auth_token")
 		if err != nil {
 			http.Error(w, "Missing or invalid token", http.StatusUnauthorized)
 			return
 		}
 
-		token, err = h.service.ConfirmLoginCode(token, body.Code)
+		tokenOrgSelect, err := h.service.ConfirmLoginCode(tokenConfirmLogin, body.Code)
 		if err != nil {
 			if appErr, ok := err.(*apperrors.SError); ok {
 				switch appErr.Code {
@@ -82,7 +82,7 @@ func (h *Handler) handlerLoginConfirmCode(w http.ResponseWriter, r *http.Request
 				case "code_expired":
 					http.Error(w, "Code has expired", http.StatusUnauthorized)
 				case "token_generation":
-					http.Error(w, "Token generation error", http.StatusInternalServerError)
+					http.Error(w, "Error generating access, try later.", http.StatusInternalServerError)
 				default:
 					http.Error(w, "Internal server error", http.StatusInternalServerError)
 				}
@@ -93,7 +93,8 @@ func (h *Handler) handlerLoginConfirmCode(w http.ResponseWriter, r *http.Request
 			return
 		}
 
-		utils.SetCookie(w, "access_token", token)
+		utils.SetCookie(w, "auth_token", tokenOrgSelect)
+
 		w.Header().Set("Content-Type", "plain/text")
 		w.Write([]byte("Login confirmed successfully"))
 	default:

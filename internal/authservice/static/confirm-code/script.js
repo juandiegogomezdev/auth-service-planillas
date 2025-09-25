@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
         errorMessage.style.display = 'block'
         return
       } else {
-        window.location.href = window.APP_CONFIG.app_url
+        window.location.href = window.APP_CONFIG.page_org_select
       }
     } catch (error) {
       errorMessage.textContent = 'Error en el servidor!'

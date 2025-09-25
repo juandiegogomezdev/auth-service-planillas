@@ -74,6 +74,10 @@ document.addEventListener('DOMContentLoaded', () => {
       else {
         formContainer.style.display = 'none'
         successContainer.style.display = 'block'
+        // redirect to org-select after 1 second
+        setTimeout(() => {
+          window.location.href = window.APP_CONFIG.page_org_select
+        }, 1000)
       }
 
 

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"proyecto/internal/authservice/apperrors"
 	"proyecto/internal/authservice/dtoauth"
+	"proyecto/internal/shared/utils"
 )
 
 func (h *Handler) handlerRegister(w http.ResponseWriter, r *http.Request) {
@@ -54,9 +55,7 @@ func (h *Handler) handlerRegisterConfirm(w http.ResponseWriter, r *http.Request)
 		}
 		r.Body.Close()
 
-		fmt.Println("Received body:", body)
-
-		err = h.service.CreateUser(body.Token, body.Password)
+		tokenOrgSelect, err := h.service.CreateUser(body.Token, body.Password)
 		if err != nil {
 			if appErr, ok := err.(*apperrors.SError); ok {
 				switch appErr.Code {
@@ -69,14 +68,21 @@ func (h *Handler) handlerRegisterConfirm(w http.ResponseWriter, r *http.Request)
 				case "user_creation":
 					http.Error(w, "Error creating user", http.StatusInternalServerError)
 					return
+				case "token_generation":
+					http.Error(w, "Error generating token, please login", http.StatusInternalServerError)
+					return
 				}
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-				return
+
 			}
+
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
 
 		}
 
-		w.Write([]byte("User created successfully"))
+		// Generate a org type token
+		utils.SetCookie(w, "auth_token", tokenOrgSelect)
+		w.Write([]byte("Registration successful"))
 		return
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

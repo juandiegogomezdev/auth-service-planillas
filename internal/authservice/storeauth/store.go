@@ -93,7 +93,7 @@ func (s *store) GetVerificationByEmail(email string) (VerificationInfo, error) {
 	row := s.db.QueryRow(q, email)
 
 	var code string
-	var id uuid.UUID
+	var id uuid.UUID // user ID and also verification ID
 	var expiresAt time.Time
 	err := row.Scan(&code, &id, &expiresAt)
 	if err != nil {

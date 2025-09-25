@@ -23,13 +23,13 @@ type loginMemRequest struct {
 func (h *HandlerOrg) HandlerSessionOrg(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		token, err := utils.GetCookie(r, "access_token")
+		token, err := utils.GetCookie(r, "auth_token")
 		if err != nil {
 			http.Error(w, "Missing or invalid token", http.StatusUnauthorized)
 			return
 		}
 
-		payload, err := tokenizer.JWTParseAccessToken(token)
+		payload, err := tokenizer.JWTParseOrgSelectToken(token)
 		if err != nil {
 			http.Error(w, "Invalid token", http.StatusUnauthorized)
 			return
@@ -64,13 +64,13 @@ func (h *HandlerOrg) HandlerSessionOrg(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	case http.MethodPost:
-		token, err := utils.GetCookie(r, "access_token")
+		token, err := utils.GetCookie(r, "auth_token")
 		if err != nil {
 			http.Error(w, "Missing or invalid token", http.StatusUnauthorized)
 			return
 		}
 
-		payload, err := tokenizer.JWTParseAccessToken(token)
+		payload, err := tokenizer.JWTParseOrgSelectToken(token)
 		if err != nil {
 			http.Error(w, "Invalid token", http.StatusUnauthorized)
 			return
@@ -108,13 +108,13 @@ func (h *HandlerOrg) HandlerSessionOrg(w http.ResponseWriter, r *http.Request) {
 			return
 		case serviceorg.FoundMembership:
 			// Create a new token with the membershipID
-			newToken, err := tokenizer.JWTGenerateMembershipAccessToken(userID, memID)
+			newToken, err := tokenizer.JWTGenerateAppAccessToken(userID, memID)
 			if err != nil {
 				http.Error(w, "Error generating access", http.StatusInternalServerError)
 				return
 			}
 			// Set the new token in a cookie
-			utils.SetCookie(w, "access_token", newToken)
+			utils.SetCookie(w, "auth_token", newToken)
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte("Membership selected successfully"))
 			return

@@ -30,7 +30,7 @@ func (s *ServiceAuth) Login(email string, password string) (string, error) {
 	}
 
 	// Generate JWT token
-	token, err := tokenizer.JWTGenerateConfirmLoginToken(user.Email)
+	tokenConfirmLogin, err := tokenizer.JWTGenerateConfirmLoginToken(user.Email)
 	if err != nil {
 		return "", apperrors.WrapSerror("token_generation", fmt.Errorf("error generating login token: %w", err))
 	}
@@ -38,7 +38,7 @@ func (s *ServiceAuth) Login(email string, password string) (string, error) {
 	// Send code via email
 	go s.mailer.Send(user.Email, "Your login code", fmt.Sprintf("Your login code is: %s. It expires in 15 minutes.", code))
 
-	return token, nil
+	return tokenConfirmLogin, nil
 }
 
 func (s *ServiceAuth) ConfirmLoginCode(token string, code string) (string, error) {
@@ -63,11 +63,12 @@ func (s *ServiceAuth) ConfirmLoginCode(token string, code string) (string, error
 		return "", apperrors.WrapSerror("code_expired", fmt.Errorf("code has expired"))
 	}
 
-	// Generate new JWT token
-	newToken, err := tokenizer.JWTGenerateOrgSelectToken(verificationInfo.ID)
+	// Generate a org-Select JWT token
+	// verificationInfo.ID is the user ID.
+	tokenOrgSelect, err := tokenizer.JWTGenerateOrgSelectToken(verificationInfo.ID)
 	if err != nil {
-		return "", apperrors.WrapSerror("token_generation", fmt.Errorf("error generating new login token: %w", err))
+		return "", apperrors.WrapSerror("token_generation", fmt.Errorf("error generating new org-select token: %w", err))
 	}
 
-	return newToken, nil
+	return tokenOrgSelect, nil
 }

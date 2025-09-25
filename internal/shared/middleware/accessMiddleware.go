@@ -18,7 +18,7 @@ const (
 
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		token, err := utils.GetCookie(r, "access_token")
+		token, err := utils.GetCookie(r, "auth_token")
 		if err != nil {
 			http.Error(w, "Missing or invalid token", http.StatusUnauthorized)
 			return

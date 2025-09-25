@@ -20,7 +20,7 @@ document.getElementById('loginForm').addEventListener('submit', async function (
       errorMessage.textContent = await response.text()
       errorMessage.style.display = 'block'
     } else {
-      window.location.href = window.APP_CONFIG.url_page_login_confirm
+      window.location.href = window.APP_CONFIG.page_url_login_confirm
     }
   } catch (error) {
     console.log(error)

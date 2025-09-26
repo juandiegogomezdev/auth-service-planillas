@@ -3,8 +3,8 @@ package serviceauth
 import (
 	"fmt"
 	"proyecto/config"
-	"proyecto/internal/authservice/apperrors"
 	"proyecto/internal/authservice/modelauth"
+	"proyecto/internal/shared/apperrors"
 	"proyecto/internal/shared/tokenizer"
 	"proyecto/internal/shared/utils"
 	"time"

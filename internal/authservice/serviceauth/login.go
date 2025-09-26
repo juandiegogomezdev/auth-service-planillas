@@ -2,7 +2,7 @@ package serviceauth
 
 import (
 	"fmt"
-	"proyecto/internal/authservice/apperrors"
+	"proyecto/internal/shared/apperrors"
 	"proyecto/internal/shared/tokenizer"
 	"proyecto/internal/shared/utils"
 )

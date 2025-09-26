@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"proyecto/internal/authservice/apperrors"
 	"proyecto/internal/authservice/dtoauth"
+	"proyecto/internal/shared/apperrors"
 	"proyecto/internal/shared/utils"
 )
 
